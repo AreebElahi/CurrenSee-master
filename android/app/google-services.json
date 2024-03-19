@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1068435807420",
+    "project_id": "currenseeapp-794eb",
+    "storage_bucket": "currenseeapp-794eb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068435807420:android:0839ccb83e271e1cd684b9",
+        "android_client_info": {
+          "package_name": "com.example.fluttertest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1DvLecsN9coRXWQpqeS9EmNGSwQftVuc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
