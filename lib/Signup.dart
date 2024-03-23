@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertest/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:random_string/random_string.dart';
 
 class AnimatedSignupImage extends StatefulWidget {
-  const AnimatedSignupImage({super.key});
+  const AnimatedSignupImage({Key? key}) : super(key: key);
 
   @override
   _AnimatedSignupImageState createState() => _AnimatedSignupImageState();
@@ -67,22 +66,37 @@ class _AnimatedSignupImageState extends State<AnimatedSignupImage>
 }
 
 class Signup extends StatefulWidget {
-  const Signup({super.key});
+  const Signup({Key? key}) : super(key: key);
 
   @override
   State<Signup> createState() => SignupState();
 }
 
 class SignupState extends State<Signup> {
+  int _userCount = 0; // Variable to hold the current user count
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserCount(); // Fetch initial user count from database
+  }
+
+  // Method to fetch the current user count from the database
+  Future<void> _getUserCount() async {
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection("UserRegistration").get();
+    setState(() {
+      _userCount = querySnapshot.docs.length;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-        TextEditingController FirstNameController=TextEditingController();
-        TextEditingController LastNameController=TextEditingController();
-        TextEditingController EmailController=TextEditingController();
-        TextEditingController PasswordController=TextEditingController();
-        TextEditingController CountryController=TextEditingController();
-
-
+    TextEditingController firstNameController = TextEditingController();
+    TextEditingController lastNameController = TextEditingController();
+    TextEditingController emailController = TextEditingController();
+    TextEditingController passwordController = TextEditingController();
+    TextEditingController countryController = TextEditingController();
 
     final ButtonStyle style2 = ElevatedButton.styleFrom(
       textStyle: const TextStyle(fontSize: 20),
@@ -99,46 +113,42 @@ class SignupState extends State<Signup> {
         child: Column(
           children: [
             const AnimatedSignupImage(), // Include the AnimatedSignupImage widget
-
             const SizedBox(height: 20),
-
             Container(
               margin: const EdgeInsets.all(20),
-              child:  Column(
+              child: Column(
                 children: [
                   TextField(
-                    controller: FirstNameController,
-                      decoration: const InputDecoration(
+                    controller: firstNameController,
+                    decoration: const InputDecoration(
                       labelText: "First Name",
-                      
                       prefixIcon: Icon(Icons.person),
                     ),
                   ),
                   TextField(
-                    controller: LastNameController,
+                    controller: lastNameController,
                     decoration: const InputDecoration(
                       labelText: "Last Name",
                       prefixIcon: Icon(Icons.person),
                     ),
                   ),
                   TextField(
-                    controller: EmailController,
+                    controller: emailController,
                     decoration: const InputDecoration(
                       labelText: "Email",
                       prefixIcon: Icon(Icons.email),
                     ),
                   ),
                   TextField(
-                    controller: PasswordController,
-                       obscureText: true,
+                    controller: passwordController,
+                    obscureText: true,
                     decoration: const InputDecoration(
-
                       labelText: "Password",
                       prefixIcon: Icon(Icons.lock),
                     ),
                   ),
                   TextField(
-                    controller: CountryController,
+                    controller: countryController,
                     decoration: const InputDecoration(
                       labelText: "Country",
                       prefixIcon: Icon(Icons.location_on),
@@ -148,80 +158,57 @@ class SignupState extends State<Signup> {
               ),
             ),
             ElevatedButton(
-  style: style2,
-  onPressed: () async {
-    CollectionReference tab = FirebaseFirestore.instance.collection("UserRegistration");
-    String email = EmailController.text;
+              style: style2,
+              onPressed: () async {
+                CollectionReference tab =
+                    FirebaseFirestore.instance.collection("UserRegistration");
+                String email = emailController.text;
 
-    // Check if the email already exists
-    QuerySnapshot emailSnapshot = await tab.where('Email', isEqualTo: email).get();
+                // Check if the email already exists
+                QuerySnapshot emailSnapshot =
+                    await tab.where('Email', isEqualTo: email).get();
 
-    if (emailSnapshot.docs.isNotEmpty) {
-      // Email already exists
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Email Exists'),
-            content: const Text('The provided email is already registered. Please use a different email.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      // Email doesn't exist, proceed with registration
-      String id = randomNumeric(2);
-      await tab.doc(id).set({
-        'Id': id,
-        'FirstName': FirstNameController.text,
-        'LastName': LastNameController.text,
-        'Email': EmailController.text,
-        'Password': PasswordController.text,
-        'Country': CountryController.text,
-      }).then((_) {
-        // Registration successful, redirect to login page
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Login()),
-        );
-      }).catchError((e) => print('Failed to add user: $e'));
-    }
-  },
-  child: const Text('Sign Up'),
-)
-
-
-            /* ElevatedButton(
-                 style: style2,
-
-              onPressed: ()async{
-                CollectionReference tab = FirebaseFirestore.instance.collection("UserRegistration");
-                String Id = randomNumeric(2);
-                tab.doc(Id).set({
-                  'Id': Id,
-                  'FirstName' : FirstNameController.text,
-                  'LastName' :LastNameController.text, 
-                  'Email' :EmailController.text, 
-                  'Password' :PasswordController.text, 
-                  'Country' :CountryController.text, 
-                }).then((value) => 
-                print ('user add')).catchError((e)=> print('faild to add $e'));
-                  
-                },
-       child: Text('Sign Up')), */
-      
-
-
-
-           
-            ,const SizedBox(height: 10),
+                if (emailSnapshot.docs.isNotEmpty) {
+                  // Email already exists
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Email Exists'),
+                        content: const Text(
+                            'The provided email is already registered. Please use a different email.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  // Email doesn't exist, proceed with registration
+                  _userCount++; // Increment user count
+                  await tab.doc('$_userCount').set({
+                    // Use user count as ID
+                    'FirstName': firstNameController.text,
+                    'LastName': lastNameController.text,
+                    'Email': emailController.text,
+                    'Password': passwordController.text,
+                    'Country': countryController.text,
+                  });
+                  // Registration successful, redirect to login page
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Login()),
+                  );
+                }
+              },
+              child: const Text('Sign Up'),
+            ),
+            const SizedBox(height: 10),
           ],
         ),
       ),

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertest/Converter.dart';
 
 class BouncingImage extends StatefulWidget {
-  const BouncingImage({super.key});
+  const BouncingImage({Key? key}) : super(key: key);
 
   @override
   _BouncingImageState createState() => _BouncingImageState();
@@ -134,11 +134,14 @@ class LoginState extends State<Login> {
         .get()
         .then((QuerySnapshot querySnapshot) {
       if (querySnapshot.size > 0) {
-        // Email found in database, navigate to Converter page
+        // Email found in database, get the unique ID of the user document
+        String userId = querySnapshot.docs.first.id;
+        // Navigate to Converter page with the user ID
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => Converter(userEmail: useremail)),
+              builder: (context) =>
+                  Converter(userEmail: useremail, userId: userId)),
         );
       } else {
         // Email not found in database, show error dialog

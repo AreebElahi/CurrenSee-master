@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HistoryPage extends StatelessWidget {
   final String userEmail;
+  final String userId;
 
-  const HistoryPage({Key? key, required this.userEmail}) : super(key: key);
+  const HistoryPage({Key? key, required this.userEmail, required this.userId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,8 @@ class HistoryPage extends StatelessWidget {
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('ConvertedAmounts')
-                    .where('UserEmail', isEqualTo: userEmail)
+                    .doc(userId)
+                    .collection('Conversions') // Subcollection path
                     .orderBy('Timestamp', descending: true)
                     .snapshots(),
                 builder: (context, snapshot) {
@@ -36,16 +39,18 @@ class HistoryPage extends StatelessWidget {
                   if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
-                  if (snapshot.data!.docs.isEmpty) {
+                  if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
                     return Center(child: Text('No data available'));
                   }
                   return ListView(
                     children: snapshot.data!.docs.map((doc) {
+                      Map<String, dynamic> data =
+                          doc.data() as Map<String, dynamic>;
                       return ListTile(
                         title: Text(
-                          '${doc['OriginalAmount']} ${doc['OriginalCurrency']} = ${doc['ConvertedAmount']} ${doc['ConvertedCurrency']}',
+                          '${data['OriginalAmount']} ${data['OriginalCurrency']} = ${data['ConvertedAmount']} ${data['ConvertedCurrency']}',
                         ),
-                        subtitle: Text(doc['Timestamp'].toString()),
+                        subtitle: Text(data['Timestamp'].toString()),
                       );
                     }).toList(),
                   );

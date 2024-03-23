@@ -7,8 +7,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Converter extends StatefulWidget {
   final String userEmail;
+  final String userId;
 
-  const Converter({Key? key, required this.userEmail}) : super(key: key);
+  const Converter({Key? key, required this.userEmail, required this.userId})
+      : super(key: key);
 
   @override
   State<Converter> createState() => _ConverterState();
@@ -111,7 +113,11 @@ class _ConverterState extends State<Converter> {
 
   void storeConvertedAmount(double originalAmount, String originalCurrency,
       double convertedAmount, String convertedCurrency) {
-    FirebaseFirestore.instance.collection('ConvertedAmounts').add({
+    FirebaseFirestore.instance
+        .collection('ConvertedAmounts')
+        .doc(widget.userId)
+        .collection('Conversions') // Create a subcollection
+        .add({
       'UserEmail': widget.userEmail,
       'OriginalAmount': originalAmount,
       'OriginalCurrency': originalCurrency,
@@ -261,8 +267,9 @@ class _ConverterState extends State<Converter> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              HistoryPage(userEmail: widget.userEmail),
+                          builder: (context) => HistoryPage(
+                              userEmail: widget.userEmail,
+                              userId: widget.userId),
                         ),
                       );
                     },
