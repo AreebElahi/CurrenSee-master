@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fluttertest/AccountSettings.dart';
 import 'package:fluttertest/HistoryPage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
@@ -213,7 +214,7 @@ class _ConverterState extends State<Converter> {
                   ),
                   IconButton(
                     onPressed: swapFields,
-                    icon: Icon(Icons.swap_vert),
+                    icon: const Icon(Icons.swap_vert),
                   ),
                 ],
               ),
@@ -273,7 +274,19 @@ class _ConverterState extends State<Converter> {
                         ),
                       );
                     },
-                    child: Text("View History"),
+                    child: const Text("View History"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AccountSettings(userId: widget.userId),
+                        ),
+                      );
+                    },
+                    child: const Text("Account Settings"),
                   ),
                 ],
               ),

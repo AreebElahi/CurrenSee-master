@@ -73,6 +73,7 @@ class Login extends StatefulWidget {
 
 class LoginState extends State<Login> {
   final TextEditingController useremailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -103,9 +104,10 @@ class LoginState extends State<Login> {
                       prefixIcon: Icon(Icons.email),
                     ),
                   ),
-                  const TextField(
+                  TextField(
+                    controller: passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "Password",
                       prefixIcon: Icon(Icons.lock),
                     ),
@@ -116,7 +118,12 @@ class LoginState extends State<Login> {
             ElevatedButton(
               style: style2,
               onPressed: () {
-                getUserData(useremailController.text);
+                if (validateFields()) {
+                  getUserData(
+                    useremailController.text,
+                    passwordController.text,
+                  );
+                }
               },
               child: const Text("LOGIN"),
             ),
@@ -127,29 +134,96 @@ class LoginState extends State<Login> {
     );
   }
 
-  void getUserData(String useremail) {
+  bool validateFields() {
+    if (useremailController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Email Required"),
+            content: const Text("Please enter your email."),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+      return false;
+    }
+    if (passwordController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Password Required"),
+            content: const Text("Please enter your password."),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void getUserData(String userEmail, String password) {
     FirebaseFirestore.instance
         .collection('UserRegistration')
-        .where('Email', isEqualTo: useremail)
+        .where('Email', isEqualTo: userEmail)
         .get()
         .then((QuerySnapshot querySnapshot) {
       if (querySnapshot.size > 0) {
-        // Email found in database, get the unique ID of the user document
-        String userId = querySnapshot.docs.first.id;
-        // Navigate to Converter page with the user ID
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  Converter(userEmail: useremail, userId: userId)),
-        );
+        // Email found in database, check if the password matches
+        String storedPassword = querySnapshot.docs.first['Password'];
+        if (storedPassword == password) {
+          // Password matches, get the unique ID of the user document
+          String userId = querySnapshot.docs.first.id;
+          // Navigate to Converter page with the user ID
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    Converter(userEmail: userEmail, userId: userId)),
+          );
+        } else {
+          // Password doesn't match, show error dialog
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Incorrect Password"),
+                content: const Text("The provided password is incorrect."),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("OK"),
+                  ),
+                ],
+              );
+            },
+          );
+        }
       } else {
         // Email not found in database, show error dialog
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text("Email Incorrect"),
+              title: const Text("Email Not Found"),
               content: const Text("The provided email is not registered."),
               actions: <Widget>[
                 TextButton(
